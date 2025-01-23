@@ -1,0 +1,521 @@
+%%
+%% This is file `sample-sigconf-authordraft.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,proceedings,bibtex,authordraft')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigconf-authordraft.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[sigconf]{acmart}
+\usepackage{soul}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{hyperref,cleveref}
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmlicensed}
+\copyrightyear{2025}
+\acmYear{2025}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[SIGMOD-Companion '25]{Make sure to enter the correct
+  conference title from your rights confirmation emai}{June 22--27,
+  2025}{Berlin, Germany}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%%  June 03--05, 2018, Woodstock, NY}
+\acmISBN{978-1-4503-XXXX-X/18/06}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+
+
+% \newcommand{\ewu}[1]{\textcolor{red}{}}
+\newcommand{\ewu}[1]{\textcolor{red}{#1}}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{Prompt Editor: A Taxonomy-driven System for Guided LLM Prompt Development in Enterprise Settings}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+\author{Jeffery Cao}
+\email{j.cao@celonis.com}
+\orcid{1234-5678-9012}
+\affiliation{%
+  \institution{Celonis}
+  \city{New York City}
+  \state{New York}
+  \country{USA}
+}
+
+\author{Lampros Flokas}
+\email{l.flokas@celonis.com}
+\affiliation{%
+  \institution{Celonis}
+  \city{New York City}
+  \state{New York}
+  \country{USA}
+}
+
+\author{Eugene Wu}
+\email{ewu@cs.columbia.edu}
+\affiliation{%
+  \institution{Columbia University, Celonis}
+  \city{New York City}
+  \state{New York}
+  \country{USA}
+}
+
+\author{Xu Chu}
+\email{x.chu@celonis.com}
+\affiliation{%
+  \institution{Celonis}
+  \city{New York City}
+  \state{New York}
+  \country{USA}
+}
+
+\author{Cong Yu}
+\email{co.yu@celonis.com}
+\affiliation{%
+  \institution{Celonis}
+  \city{New York City}
+  \state{New York}
+  \country{USA}
+}
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+% \renewcommand{\shortauthors}{Trovato et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+Large Language Models (LLMs) are increasingly integrated into enterprise platforms, requiring business users to write prompts despite the lack of prompt engineering expertise. Although these users possess domain knowledge, they struggle to translate their intentions into effective prompts and often overlook established practices like few-shot learning. We present Prompt Editor, a human-in-the-loop system that assists users in writing high-quality prompts by initializing and improving user-created prompts. \ewu{by leveraging an organization's existing corpus of prompts to both initialize and improve user-created prompts}. At its core, Prompt Editor leverages a taxonomy of prompt segment types learned from an organization's existing collection of prompts. This taxonomy captures the contextual relationships between different components of effective prompts, similar to how Abstract Syntax Trees represent programming language structure. \ewu{This supports alignment of prompt fragments and recommendation} We demonstrate Prompt Editor with a hypothetical LLM-based enterprise platform that extracts structured data from customer emails. Attendees can interact with the demo to experience first-hand how Prompt Editor supports prompt writing.
+
+% Large Language Models (LLMs) are increasingly integrated into enterprise platforms, requiring business users to write prompts despite lack of relevant expertise. Although these users possess domain knowledge, they struggle to translate their intentions into effective prompts and often overlook established prompt engineering techniques like few-shot learning. We present Prompt Editor, a human-in-the-loop system that enables users to write high-quality prompts. At its core, Prompt Editor leverages a learned taxonomy of prompt segment types that captures the contextual relationships between different components of effective prompts, similar to how Abstract Syntax Trees represent programming language structure. We introduce an iterative method to learn this taxonomy from existing prompts and demonstrate how it enables automated analysis of prompt completeness and quality. The system provides targeted feedback by identifying missing essential components and evaluating each prompt segment against predefined rules. Our demonstration showcases how Prompt Editor can be integrated into existing text editors, making prompt engineering more accessible to business users while enforcing best practices. Through this approach, we bridge the gap between domain expertise and prompt engineering capabilities in enterprise settings.
+
+% For initialization, Prompt Editor uses a learned taxonomy of prompt segment types as a template, generating task-specific prompts from user-provided context. For improvement, it acts as a prompt compiler, parsing prompts into taxonomy segments and evaluating them against best practices and predefined rules. The system provides targeted feedback about missing segments and rule violations while giving users the autonomy to apply changes based on their domain expertise. Through this approach, we bridge the gap between domain expertise and prompt engineering capabilities in enterprise settings.
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+ <concept>
+  <concept_id>00000000.0000000.0000000</concept_id>
+  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+  <concept_significance>500</concept_significance>
+ </concept>
+ <concept>
+  <concept_id>00000000.00000000.00000000</concept_id>
+  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+  <concept_significance>300</concept_significance>
+ </concept>
+ <concept>
+  <concept_id>00000000.00000000.00000000</concept_id>
+  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+  <concept_significance>100</concept_significance>
+ </concept>
+ <concept>
+  <concept_id>00000000.00000000.00000000</concept_id>
+  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+  <concept_significance>100</concept_significance>
+ </concept>
+</ccs2012>
+\end{CCSXML}
+
+% \ccsdesc[500]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc[300]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+% \ccsdesc[100]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{Large Language Models, Prompt Engineering, Taxonomy Generation, Text Segmentation}
+%% A "teaser" image appears between the author and affiliation
+%% information and the body of the document, and typically spans the
+%% page.
+% \begin{teaserfigure}
+%   \includegraphics[width=\textwidth]{sampleteaser}
+%   \caption{Seattle Mariners at Spring Training, 2010.}
+%   \Description{Enjoying the baseball game from the third-base
+%   seats. Ichiro Suzuki preparing to bat.}
+%   \label{fig:teaser}
+% \end{teaserfigure}
+
+% \received{20 February 2007}
+% \received[revised]{12 March 2009}
+% \received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+\section{Introduction}
+Large Language Models (LLMs) are increasingly integrated into enterprise business platforms to extract insights from unstructured data and perform complex reasoning tasks. These platforms rely on input prompts to guide the LLM's behavior, encoding important task-specific information. To empower users to take advantage of the full potential of LLM, many enterprise companies have turned business users into prompt writers. Examples include Celonis' Annotation Builder platform \cite{CelonisAB}, Palantir’s Artificial Intelligence platform \cite{PalantirAIP} and Salesforce’s AgentForce platform \cite{SalesforceAgentforce}.
+
+However, while business users can bring their domain expertise, they lack the skills to craft effective prompts. Studies have identified significant barriers that prevent users from translating their intent into effective prompts \cite{SixLearningBarriers, WhyJohnnyCantPrompt}, and many users struggle to create even the first version of a prompt. Furthermore, business users are often unaware of prompt engineering techniques, such as few-shot examples and chain-of-thought prompting, both of which have been shown to improve performance \cite{brown2020languagemodelsfewshotlearners, wei2023chainofthoughtpromptingelicitsreasoning}.
+
+Existing best practices for prompt engineering suggest organizing prompt information into discrete sections or "prompt segments", much like a structured document \cite{OpenAIPromptEngineering}. 
+% - <connect the point about the similarity between a prompt and a structured document to the existence of a schema for prompt i.e. prompt schema and the importance of discovering a prompt schema which acts as a template for writing prompts> 
+% <bring in the point that we can't define a standard prompt schema for all prompts because of the inherent wide variety of possible prompts for different use cases. The most adequate prompt schema would vary depending on the use case -> This is especially true for enterprise LLM platforms, where prompts are written to perform a very specific type of tasks (bring in Celonis' Annotation Builder platform that creates annotations by converting the unstructured text from your existing data into structured data) -> talk about how across these prompts, they share structural patterns thus motivating a prompt schema comprised of both commonly used elements in the schema (or segment types) across all prompts such as "Role Assignment" and "Examples" and segment types specific to the platform (not sure if this is the best way to phrase it)>
+% <I'm not sure where would be a good place to bring in my point about attaching rules or guidelines to each segment type if at all>
+
+% Several applications have demonstrated the effectiveness of a manually defined prompt design for a particular domain \cite{Yeh2022DecorateTE, Cao2023ASO}. While it is feasible to manually design an initial prompt schema, automated means are needed to expand and maintain the relevancy of the prompt schema as business users and internal developers write and use prompts over time.
+% However, discovering such a schema is challenging. Most existing topic extraction techniques, such as Latent Dirichlet Allocation (LDA) and Non-negative Matrix Factorization (NMF), focus exclusively on grouping text by semantic similarity. Although these methods can reveal coherent themes (e.g., “healthcare,” “finance,” “logistics”), \ewu{each type of segment provides a functional role within the prompt that depends on ...  for instance...} they do not capture how each portion of text functions within a prompt. For instance, a sentence that instructs the LLM to “Write me an email about a sales order” could end up in a semantically defined topic related to “emails” or “sales,” but such a classification overlooks the sentence’s functional role as an instruction. Consequently, these approaches will extract topics unique to the task and will not be generalizable since tasks with different vocabularies but identical structures would appear unrelated at the semantic level.
+
+% In addition, the function of a segment in a prompt is context dependent... <bring in example about 'Write me an email about the acceptance of a sales order' could function as a "\textit{Task Instruction}" or "\textit{Example}"
+
+% Re-write key insight paragraph to align with the arguments made prior <e.g. it should not have to explain the full example of 'Write me an email about the acceptance of a sales order'> 
+
+This approach is especially beneficial for enterprise platforms, where prompts commonly share structural patterns but require task-specific customization. For instance, on the Palantir Artificial Intelligence Platform, prompts guide the LLM to perform reasoning and prediction on internal data. In a more general enterprise scenario, prompts might focus on extracting structured outputs by analyzing lengthy text documents, such as emails or sales invoices. By defining general-purpose segment types (e.g., "Role Assignment" and "Examples") alongside more specialized ones (e.g., which sections of a document to focus on), we can capture both universal best practices and unique domain requirements within prompts to provide a prescriptive template. Furthermore, by encoding these segment types within a generalizable prompt schema, we can more easily attach rules to each segment type that evaluates the quality of each section of the prompts users write. In this way, this framework encourages consistency and increased robustness in prompt writing. \ewu{this is good, but you want to also emphasize that the types of hierarchical in nature}
+
+However, discovering such a schema is challenging. Most existing topic extraction techniques, such as Latent Dirichlet Allocation (LDA) and Non-negative Matrix Factorization (NMF), focus exclusively on grouping text by semantic similarity. Although these methods can reveal coherent themes (e.g., “healthcare,” “finance,” “logistics”), \ewu{each type of segment provides a functional role within the prompt that depends on ...  for instance...} they do not capture how each portion of text functions within a prompt. For instance, a sentence that instructs the LLM to “Write me an email about a sales order” could end up in a semantically defined topic related to “emails” or “sales,” but such a classification overlooks the sentence’s functional role as an instruction. Consequently, these approaches will extract topics unique to the task and will not be generalizable since tasks with different vocabularies but identical structures would appear unrelated at the semantic level. \ewu{Jeff: I brought in this example in the following paragraph; prev sentence a bit too abstract.  focus on communicating what functional role of a segment type means -- perhaps example where the same segment type has different roles in two different prompts.} Several applications have demonstrated the effectiveness of a manually defined prompt design for a particular domain \cite{Yeh2022DecorateTE, Cao2023ASO}. While it
+is feasible to manually design an initial prompt schema, automated means are needed to expand and maintain the relevancy of the prompt schema as business users and internal developers write and use prompts over time. \ewu{Jeff: Done While it is feasible to manually design an initial prompt schema, automated means are needed to expand, maintain, and use the prompt schema as business users and internal developers write and use prompts over time.}
+
+
+% For example, consider an enterprise LLM platform where LLMs processes unstructured text documents such as emails or sales invoice notes and generates structured outputs. 
+
+% In this scenario, general prompt segment types like 'Role Assignment' or 'Examples' can be explicitly defined. Also, additional segment types can be defined to capture task-specific requirements. One such segment relevant to this example would be a segment where the prompt writer specifies which areas of the unstructured document should the LLM focus on when analyzing the large document text. 
+
+% As such, identifying a generalizable schema for prompts on such platforms captures these nuances in addition to common prompt engineering techniques to provide a prescriptive template that can be used to guide the prompt writing process. Furthermore, with a clear schema defined, we can more easily define rules associated with each schema element that evaluates the quality of each section of the prompts users write.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=7cm]{images/taxonomy.png}
+    \caption{An Example Prompt Taxonomy. Nodes such as "\textit{Instructions}" can be manually defined while nodes such as "\textit{Input Focus Areas}" can be learned.\ewu{example where there's an initial manually constructed taxonomy, and then highlight some nodes added automatically.}}
+    \label{fig:taxonomy}
+\end{figure}
+
+\ewu{this is similar to the previous paragraph, so should be merged as it's part of the problem setup}
+\textbf{Taxonomy of Prompt Segment Types.} Our key insight is that prompts behave similarly to programming languages \cite{wang2024langgptrethinkingstructuredreusable, PromptEngineeringHottestProgrammingLanguage, AIWarMasteringArtOfPromptEngineering} where the functional meaning of a sentence depends on how it is situated among surrounding elements. For example, a sentence such as 'Write me an email about the acceptance of a sales order' could function as a "\textit{Task Instruction}" if it directly conveys the user’s goal, or it could be an "\textit{Example}" if it illustrates a possible user input in an example. A naive flat schema cannot capture these context-sensitive roles because it cannot account for how one part of the prompt influences another. Building on the programming language analogy, we propose modeling prompts with a taxonomy of prompt segment types, as seen in Figure \ref{fig:taxonomy}, similar to an Abstract Syntax Tree (AST). Each node in this taxonomy represents a distinct function (e.g., specifying the LLM’s role, giving examples) and is connected through is-part-of relationships that encode the hierarchical structure of the prompt. In this way, the taxonomy captures not only what a given segment contains, but also how it fits within the broader prompt context.
+\ewu{some works like dspy want to treat prompt creation as programming, but that doesn't work for business users.}
+
+\ewu{the following are parts of a solution, so you want to preface with something like: This paper describes a system that both learns taxonomies and integrates the taxonomy in a prompt editor to provide initialization and iterative improvement functionalities...}
+Building on this insight, this paper introduces a system that both learns taxonomies and integrates the taxonomy in a prompt editor to provide initialization and iterative improvement functionalities. \\
+\textbf{Learning a Taxonomy from prompts.} Recent work \cite{wan2024tntllmtextminingscale} has demonstrated that LLMs are capable of generating taxonomies of labels from document summaries. Building on these findings, we use LLMs to infer the function or utility of each prompt segment, thus addressing the shortcoming of purely semantic topic modeling approaches. By iteratively segmenting prompts and examining leaf segments, we identify more granular child nodes that serve distinct functional roles. The is-part-of relationship ensures that a parent segment can be refined into subsegments, mirroring how a programming construct can be broken into smaller functional blocks. Once the iterative segmentation process is complete, an expert reviews and consolidates the resulting taxonomy, ensuring it remains both practical and faithful to the functional structure of real-world prompts.
+
+% \textbf{Learning a Taxonomy from prompts.} Recent work \cite{wan2024tntllmtextminingscale} has demonstrated that LLMs are capable of generating taxonomies of labels from document summaries. Using the insight that there exist is-part-of relationships between parent and child nodes, we propose that new nodes in the taxonomy are more accurately discovered when we are analyzing leaf node segments to discover new child nodes. As such, we present an overview of an iterative approach to generate a taxonomy where each iteration involves alternating between segmenting prompts and enriching the taxonomy at the current depth. Once the taxonomy is generated, an expert can review and adjust the final taxonomy.
+
+\textbf{Prompt Editor.} To demonstrate the value of the learned taxonomy, we present \textit{Prompt Editor}, a text editor that assists users in both initializing and improving prompts.  \ewu{while init and improve are categories, there's clearly a lot of depth in both categories.   prob better to just list the features enabled from having a taxonomy, for instance: 
+\begin{itemize}
+    \item initialization
+    \item finding relevant examples
+    \item suggesting missing segments
+    \item improving a segment
+    \item etc
+\end{itemize}}
+
+
+\paragraph{Prompt Initialization}
+For initializing prompts, Prompt Editor uses the learned taxonomy as a template to generate an initial version of the prompt. To ensure that the prompt is relevant to the user's task, users provide task-specific information for the system to use as context and populate the prompt template.
+% For initializing prompts, Prompt Editor uses the learned taxonomy as a template to generate an initial version of the prompt. To ensure that the prompt is relevant to the user's task, users provide task-specific information, such as a description of the task or details about the input data, which the system uses as context to populate the prompt template. 
+\paragraph{Prompt Improvement}
+For improving prompts, Prompt Editor acts like a compiler for prompts, parsing the user's input prompt into taxonomy segments and evaluating the prompt on best practices. This involves making sure that (1) all essential segments are present and (2) each segment adheres to predefined rules. For example, a rule for the 'Example' segment type might require that each example include a reasoning behind the model’s output. This ensures that the model is not only exposed to input/output pairs but also benefits from reasoning to improve its understanding. Lastly, we surface the feedback to the user and provide them with the autonomy to evaluate suggestions and potentially tweak changes according to their domain knowledge and understanding of the task. In this way, users effectively supervise the Prompt Editor in the prompt improvement process, whereas the Prompt Editor acts as a quality gate and generates ideas for users to edit the prompt to reach those quality standards.
+
+% \textbf{Prompt Editor.} To demonstrate the value of the learned taxonomy, we present \textit{Prompt Editor}, a text editor designed to assist users in both initializing and improving prompts. In \textit{Prompt Initialization} mode, the editor uses the learned taxonomy as a template to guide the user in drafting an initial prompt. Users provide task-specific information, such as a description of the task or details about the input data, which the system combines with the taxonomy to generate a structured draft prompt. In \textit{Prompt Improvement} mode, the editor acts like a compiler for prompts, parsing the user’s input into taxonomy segments and enforcing best practices. The system ensures (1) all essential prompt elements are present and (2) segment-specific rules are adhered to. It provides targeted feedback, both inline (linked to specific text) and general (suggesting missing elements), enabling users to iteratively refine their prompt. By integrating initialization and improvement functionalities, the Prompt Editor empowers users to efficiently craft high-quality prompts.
+
+% To demonstrate the value of the learned taxonomy, we present \textit{Prompt Editor}, a human-in-the-loop prompt improvement system integrated into a text editor. Drawing an analogy to programming languages, prompts can be viewed as structured programs where each segment type corresponds to a distinct role. To improve a prompt, the Prompt Editor functions as a compiler that parses the prompt into its taxonomy structure and evaluating the prompt on best practices. This involves making sure (1) all essential segments are present and (2) each segment adheres to predefined rules. For example, a rule for the “Example” segment type might require that each example include a reasoning behind the model’s output. This ensures the model is not only exposed to input/output pairs but also benefits from reasoning to improve its understanding.
+
+% Lastly, we surface the feedback to the user and provide them with the autonomy to evaluate suggestions and potentially tweak changes according to their domain knowledge and understanding of the task. In this way, users effectively supervises Prompt Editor in the prompt improvement process, whereas Prompt Editor acts as a quality gate and generates ideas for the users to edit the prompt to reach those quality standards.
+
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{images/prompt_editor_system.png}
+    \caption{System Overview of Prompt Editor \ewu{Jeff: Done include taxonomy learning in the system overview!}}
+    \label{fig:system-flow}
+\end{figure*}
+
+\section{System Description}
+
+\subsection{System Overview}
+
+\Cref{fig:arch} describes the overall system to support the prompt editor.  It consists of two main components, the prompt analyzer that uses the currently learned taxonomy to support the editor and the taxonomy learner that analyzes the corpus of prompts to refine the current taxonomy.  
+
+The user interacts with the editor by first describing a high-level task, upon which the prompt analyzer identifies a subset of the taxonomy that is relevant for the task.   It then initializes the prompt by selecting example text from the corpus for each segment and using an LLM to generate an initial prompt based on the task and examples.   The user can then \ewu{describe high level actions the user can take, and what the analyzer does.  Some text in S2.3 can probably go here}.
+
+The prompt analyzer relies on a high quality prompt taxonomy that the taxonomy learner builds and maintains.   It takes as input the corpus of prompts, past task descriptions, and user feedback to segment prompts, match each segment to nodes in the taxonomy, and augment the taxonomy with new nodes if needed.   We describe this problem formulation in \Cref{ss:learner}.   This component also leverages downstream quality signals (e.g., from deployed prompts and user feedback) as well as the high-level task descriptions to evaluate the efficacy of the prompt segmentations, match tasks with taxonomy segment, and identify high-quality example text for each segment type.   
+The following subsections describe the taxonomy learning problem.
+
+%\ewu{Jeff: Done; Describe overall system -- both learning and prompt editor main components} Our system addresses the challenge of capturing prompt engineering standards and task-specific prompt best practices by learning a taxonomy from a collection of past prompts. Using this learned taxonomy, we provide the Prompt Editor as a prompt development tool to reduce the effort users need to create prompts that align with such best practices.
+
+\subsection{Taxonomy Learner}\label{ss:learner}
+% To structure and analyze a prompt, we propose learning a taxonomy \( \mathcal{T} \) from a collection of prompts. A taxonomy $\mathcal{T}$ is defined as a labeled tree, where each node corresponds to a segment type that describes a functional role within a prompt, and each edge indicates an is-part-of relationship where the child segment type is a part of the parent segment type.   \ewu{Jeff: Done A taxonomy $\mathcal{T}$ is defined as XYZ}. Let $\mathcal{P}_i$ be the $i^{th}$ prompt, and $\mathcal{C} = \{ \mathcal{P}_1,\ldots, \mathcal{P}_n \}$ be the corpus.
+% Our goal is to learn a taxonomy $\mathcal{T}$ from $\mathcal{C}$.
+To structure and analyze a prompt, we propose learning a taxonomy \( \mathcal{T} \) from a collection of prompts. Let $\mathcal{C} = \{ \mathcal{P}_1,\ldots, \mathcal{P}_n \}$ be the corpus of prompts, where $\mathcal{P}_i$ is the $i^{th}$ prompt. We aim to construct $\mathcal{T}$ from $\mathcal{C}$, which may optionally be initialized by a manually constructed partial taxonomy $\mathcal{T}'$.
+
+A taxonomy $\mathcal{T}$ is defined as a labeled tree, where each node corresponds to a segment type that describes a functional role within a prompt, and each edge indicates an is-part-of relationship where the child segment type is a part of the parent segment type. Each node corresponds to a segment type that captures a functional role in a prompt, and each edge denotes an is-part-of relationship, indicating that the child segment type forms a subsegment of its parent. For example, in the initial $\mathcal{T}'$, there may already be a node labeled "\textit{Instruction}" under the broader "\textit{Task}" segment. Our method can then enrich this partial structure by discovering additional children, such as "\textit{Output Constraints}" or "\textit{Formatting Requirements}," based on the prompt collection $\mathcal{C}$.
+
+By allowing an optional partial taxonomy $\mathcal{T}'$ as an initial taxonomy, we incorporate known best practices or domain conventions while still discovering new data-driven refinements from the prompt corpus. Our method for deriving a hierarchical taxonomy of prompt segment types proceeds in two phases. In the first phase, we iteratively expand the taxonomy by identifying finer-grained segment types from existing parent segments. In the second phase, we incorporate expert supervision to ensure that the final taxonomy is accurate and useful for downstream tasks.
+
+\subsubsection{Phase 1: Taxonomy Generation}
+We construct the taxonomy \( \mathcal{T} \) by iteratively discovering finer-grained segment types. Each parent node in the taxonomy represents a broader segment type, and its children represent more specific sub-segments, forming an is-part-of relationship. For instance, the segment 'Analyze the invoice features to identify invoices paid late due to payment block' could belong to the 'Instruction' type, a child node of the broader 'Task' type. As such, we propose to iteratively break down a prompt into smaller segments, discovering node segment types of increasing depth in the process. 
+
+We fix a hyperparameter $d_{max}$  controlling the maximum depth of the taxonomy to avoid excessive granularity. At each depth $d$ < $d_{max}$, we alternate between Segmentation and Taxonomy Enrichment steps, focusing only on leaf nodes from the previous iteration.
+\begin{enumerate}
+    \item \textbf{Segmentation step}: If we are working at the root level of the taxonomy, we treat each prompt as a single segment. Otherwise, we utilize an LLM call that takes the prompt to be segmented and the current taxonomy to return a set of prompt segments that belong to the nodes at the current depth level.
+    \item \textbf{Taxonomy enrichment step}: Within each identified segment type, we further investigate whether there exist meaningful subsegments. To do so, we first group segments belonging to the same node into mini-batches. For each mini-batch, an LLM analyzes the utility of each sentence, assessing how each sentence contributes to the overall role of the prompt. Based on these analyses, the LLM proposes new potential child nodes that capture different roles or utilities in the prompt. For example, 'Output Constraints' can be proposed as a node under the 'Instruction' parent node. If there is significant overlap between a newly discovered child node and child nodes discovered in previous mini-batches, combine them into a single child segment type.
+\end{enumerate}
+
+Repeatedly applying these two steps for all leaf nodes refines $\mathcal{T}$, adding new children segment types at each iteration until no further subsegments are found or we exceed $d_{max}$
+
+\subsubsection{Phase 2: Expert Review and Refinement}
+Once the automated iterative process produces a candidate taxonomy, human experts review the resulting taxonomy. They assess whether any nodes are excessively granular or redundant and prune them accordingly.
+
+\subsection{Prompt Editor System}
+\ewu{Jeff: Done Introduce the editor, what it's goals are and what constitutes a successful system.  }
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Prompt_editor_screenshot.png}
+    \caption{Prompt Editor}
+    \label{fig:Prompt-Editor}
+\end{figure}
+Prompt Editor is a text editor designed to guide users through the development of high-quality prompts for enterprise LLM platforms. It seeks to accomplish this by lowering the barriers for creating an initial version of the prompt, acting as a quality gate to enforce structure and adherence to best practices, and support iterative refinement by providing target, actionable feedback. As such, the system supports both novice and experienced users in crafting high-performing prompts.
+
+\subsubsection{Prompt Initialization}
+The learned taxonomy, derived from a collection of prompts, serves as a template for future prompts because it describes the combination of essential prompt segments for a new task. \ewu{Jeff: Done because it (helps identify the combination of segments relevant for a new task? or something else?)  that's the goal and how it is achieved is the body of this subsubsection.}. Recent work suggests that LLMs can automatically populate structured templates to generate prompts \cite{Cao2023ASO} with performance equivalent to that of a human. As such, Prompt Editor provides a feature to generate an initial prompt for a user to edit, thus reducing the cognitive barriers required for users to design a prompt from scratch.
+
+Given a task description, a predefined taxonomy \( \mathcal{T} \), and optional additional context features \( \mathcal{C} \), Prompt Editor generates an initial version of the prompt. The task description specifies the intended behavior of the LLM, while the optional context features \( \mathcal{C} \) provide supplementary information about the task, such as descriptions of the input data, to ground the LLM's generation. Using these inputs, the system leverages \( \mathcal{T} \) as a template, populating each segment type with content aligned to the user's task through a separate LLM call. This generated prompt is well-structured, contains all the necessary schema elements in the taxonomy, and is tailored to the user's task. As such, it offers a foundation for users to iteratively test and improve.
+
+\ewu{Jeff: Done Things like POST/GET is not important.  What's important is functionality and technical detail -- given a taxonomy and a task or user input, how is the taxonomy USED to initialize.  Or what information does the user see?  Each detail should affect the effectiveness of the system, which is why POST/GET type info is irrelevant as it doesn't affect the success of the editor.   }
+
+% The initialization functionality is exposed through a POST endpoint that accepts a task description, a predefined taxonomy \( \mathcal{T} \), and optional context features \( \mathcal{C} \). The task description specifies the intended behavior of the LLM, while \( \mathcal{C} \) provides supplemental information such as input data descriptions to ground the LLM's generation. Using these inputs, the system leverages \( \mathcal{T} \) as a template, populating each segment type with content aligned to the user's task through an LLM call. The generated prompt is well-structured, contains all necessary taxonomy elements, and is returned to be used as a foundation for users to iteratively test and improve.
+
+\subsubsection{Prompt Improvement}
+
+Given an input prompt \( \mathcal{P} \), a predefined taxonomy \( \mathcal{T} \), and a set of predefined rules or guidelines associated with each segment type, Prompt Editor returns feedback of two types:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/guideline-based-feedback.png}
+    \caption{Guideline-based feedback}
+    \label{fig:Guideline-based-feedback}
+\end{figure}
+\paragraph{Guideline-based feedback:} Feedback specific to segments in the prompt that fail one of the defined quality guidelines. These are returned as highlighted suggestions within the prompt text, offering actionable advice linked to specific text positions.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/missing-segment-feedback.png}
+    \caption{Missing-segment feedback}
+    \label{fig:Missing-segment-feedback}
+\end{figure}
+\paragraph{Missing-Segment feedback:} Suggestions for missing segment types, independent of specific text positions.
+    % \item \textbf{Missing-Segment feedback:} Suggestions for missing segment types, independent of specific text positions.
+\\
+The system consists of the following components, as shown in Figure \ref{fig:system-flow}:
+\begin{enumerate}
+    \item \textit{Prompt Segmentation:} The segmentation component takes the taxonomy \( \mathcal{T} \) and the prompt text \( \mathcal{P} \) as input and performs segmentation through an LLM call to return a list of prompt segments for each segment type defined in the taxonomy. First, the LLM is instructed to parse $\mathcal{P}$ into individual sentences. Since there could be overlaps in segments, each sentence is then classified into a segment type defined by $\mathcal{T}$ through multiclass classification. A post-processing script groups consecutive sentences with the same classification into cohesive segments, forming a structured representation of the prompt. This structured representation serves as the foundation for feedback generation.
+    \item \textit{Missing-Segment Feedback:} After segmentation, the system evaluates which segment types in \( \mathcal{T} \) are missing. For each missing segment, the LLM generates a brief rationale explaining how its inclusion could enhance task performance. The system also provides a suggested text for the missing segment, giving users a starting point to complete their prompt.
+    \item \textit{Guideline-Based Feedback:} The system uses a separate LLM call to evaluate each prompt segment against predefined rules for its corresponding taxonomy element. For example, the guideline for an 'Instruction' segment might require the inclusion of explicit task constraints. Segments that do not meet these guidelines are flagged, and the LLM generates feedback that aggregates the specific rule violations into a cohesive suggestion.
+    \item \textit{Locating Segments in the Prompt:} Feedback generated by the Guideline-Based Feedback component is associated with its corresponding prompt segment. The system performs string matching and identifies the text position of each segment within \( \mathcal{P} \), allowing the feedback to surface inline within the editor. This ensures that users receive contextually relevant suggestions directly within the text.
+\end{enumerate}
+The missing-segment feedback and guideline-based feedback with text positions are then returned to the frontend and rendered through the text editor's UI components.
+
+\section{Demonstration Scenario}
+\ewu{Jeff: I included the screenshots in the Systems section; good to have a mockup of a screenshot or screenshots of what the user may actually see and use in the demo!  Easier to talk about features and so on.}
+Our demonstration allows attendees to get a concrete understanding of how Prompt Editor supports users to initialize a prompt from scratch (Prompt Initialization) and iteratively refine prompts (Prompt Improvement). 
+
+\textbf{Example Use Case.} The prompts are crafted for a hypothetical LLM-based enterprise platform that allows users to create LLM prompts that extract structured data from unstructured text within customer data, such as a database of emails, based on the provided prompt.
+
+To illustrate both the prompt initialization and prompt improvement functionalities, we use a scenario where a business user develops an LLM prompt on the platform to analyze email text. The LLM’s task is to determine whether an email pertains to a sales order confirmation and, if so, extract the sales order ID.
+
+\textbf{Scripted Demonstration} For prompt initialization, we demonstrate it by providing "Determine if an email is for a sales order confirmation and extract the sales order ID" as the short task description. The system then generates an initialized prompt that is filled in the empty text editor.
+For prompt improvement, we will provide an example of a poorly-written prompt, then show how the system identifies missing segments and provides guideline-based feedback for improving the prompt.
+
+\textbf{Interactive Demonstration} Attendees will also have the opportunity to write their own short task descriptions for prompt initialization or their own prompts for prompt improvement in the same use case. In doing so, they can experience firsthand how the Prompt Editor reduces efforts in prompt writing and enforces best practices.
+
+% \section{Future Work}
+
+% \section{Acknowledgments}
+
+% Identification of funding sources and other support, and thanks to
+% individuals and groups that assisted in the research and the
+% preparation of the work should be included in an acknowledgment
+% section, which is placed just before the reference section in your
+% document.
+
+% This section has a special environment:
+% \begin{verbatim}
+%   \begin{acks}
+%   ...
+%   \end{acks}
+% \end{verbatim}
+% so that the information contained therein can be more easily collected
+% during the article metadata extraction phase, and to ensure
+% consistency in the spelling of the section heading.
+
+% Authors should not prepare this section as a numbered or unnumbered {\verb|\section|}; please use the ``{\verb|acks|}'' environment.
+
+% \section{Appendices}
+
+% If your work needs an appendix, add it before the
+% ``\verb|\end{document}|'' command at the conclusion of your source
+% document.
+
+% Start the appendix with the ``\verb|appendix|'' command:
+% \begin{verbatim}
+%   \appendix
+% \end{verbatim}
+% and note that in the appendix, sections are lettered, not
+% numbered. This document has two appendices, demonstrating the section
+% and subsection identification method.
+
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+% \begin{acks}
+% To Robert, for the bagels and explaining CMYK and color spaces.
+% \end{acks}
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample-base}
+
+
+%%
+%% If your work has an appendix, this is the place to put it.
+% \appendix
+
+% \section{Research Methods}
+
+% \subsection{Part One}
+
+% Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
+% malesuada, quam in pulvinar varius, metus nunc fermentum urna, id
+% sollicitudin purus odio sit amet enim. Aliquam ullamcorper eu ipsum
+% vel mollis. Curabitur quis dictum nisl. Phasellus vel semper risus, et
+% lacinia dolor. Integer ultricies commodo sem nec semper.
+
+% \subsection{Part Two}
+
+% Etiam commodo feugiat nisl pulvinar pellentesque. Etiam auctor sodales
+% ligula, non varius nibh pulvinar semper. Suspendisse nec lectus non
+% ipsum convallis congue hendrerit vitae sapien. Donec at laoreet
+% eros. Vivamus non purus placerat, scelerisque diam eu, cursus
+% ante. Etiam aliquam tortor auctor efficitur mattis.
+
+% \section{Online Resources}
+
+% Nam id fermentum dui. Suspendisse sagittis tortor a nulla mollis, in
+% pulvinar ex pretium. Sed interdum orci quis metus euismod, et sagittis
+% enim maximus. Vestibulum gravida massa ut felis suscipit
+% congue. Quisque mattis elit a risus ultrices commodo venenatis eget
+% dui. Etiam sagittis eleifend elementum.
+
+% Nam interdum magna at lectus dignissim, ac dignissim lorem
+% rhoncus. Maecenas eu arcu ac neque placerat aliquam. Nunc pulvinar
+% massa et mattis lacinia.
+
+\end{document}
+
+\endinput
+%%
+%% End of file `sample-sigconf-authordraft.tex'.

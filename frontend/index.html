@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CodeMirror Feedback - Click-based Inline Feedback</title>
+  <!-- Include CodeMirror CSS -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/theme/elegant.min.css">
+
+  <!-- Custom Font and CSS Styles -->
+  <style>
+    body {
+      font-family: 'Fira Code', monospace;
+      background-color: #f0f0f0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3 {
+      font-family: sans-serif;
+      margin: 0;
+    }
+
+    /* Title bar for Prompt Editor */
+    #title {
+      width: 90%;
+      margin: 20px auto;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Button to open the Prompt Initialization Modal */
+    #open-init-modal-btn {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    #open-init-modal-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* The Modal overlay */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 999; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto; /* 5% from the top and centered */
+      padding: 20px;
+      border-radius: 8px;
+      width: 50%; /* Could be more or less, depending on screen size */
+      max-width: 600px;
+      box-sizing: border-box;
+      position: relative; /* Needed for the close button positioning */
+    }
+
+    /* Close Button */
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #000;
+    }
+
+    /* Modal form styling */
+    #modal-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-family: sans-serif;
+    }
+
+    #task-input {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    /* Additional Features */
+    #features-label {
+      margin-top: 10px; /* Adds space above Additional Features label */
+      margin-bottom: 6px;
+    }
+    #features-container {
+      margin-bottom: 8px;
+    }
+    .feature-row {
+      display: flex;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .feature-input {
+      flex: 1 1 auto; /* Allows inputs to shrink or grow */
+      min-width: 0;   /* Fix for flex-shrink in some browsers */
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .remove-feature-btn {
+      background-color: transparent;
+      border: none;
+      color: #777;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .remove-feature-btn:hover {
+      color: #e53935;
+    }
+
+    #add-feature-btn {
+      margin-top: 4px;
+      padding: 8px;
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    #add-feature-btn:hover {
+      background-color: #218838;
+    }
+
+    /* Button to submit the modal form */
+    #modal-initialize-btn {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #modal-initialize-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Container for the editor */
+    #editor {
+      width: 90%;
+      /* height: 500px; */
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
+
+      min-height: 300px;  /* ensures it's never too short */
+      max-height: 70vh;   /* ensures it won't exceed 70% of viewport height */
+      overflow: auto;
+    }
+
+    .CodeMirror {
+      border: 1px solid #eee;
+      height: 100%;
+    }
+
+    /* Highlighted feedback ranges */
+    .feedback-highlight {
+      background-color: rgba(255, 255, 0, 0.4); /* Light yellow highlight */
+      cursor: pointer; /* Indicate clickable feedback */
+    }
+
+    /* Inline feedback widgets */
+    .feedback-widget {
+      background-color: #e6ffed; /* Light green background */
+      padding: 2px 4px;
+      border-left: 4px solid #2cbe4e; /* Green border */
+      font-family: monospace;
+      margin-left: -4px; /* Align the border with the text */
+    }
+
+    /* Tooltip / Popup styles for click-based feedback */
+    .tooltip {
+      position: absolute;
+      background-color: #d9fbc3;
+      border: 1px solid #ccc;
+      padding: 6px 30px 6px 6px; /* Extra right padding for the close button */
+      font-family: sans-serif;
+      font-size: 14px;
+      z-index: 10;
+      color: #333;
+      border-radius: 6px;
+    }
+
+    .tooltip-close-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: transparent;
+      border: none;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .tooltip-close-btn:hover {
+      color: #000;
+    }
+
+    /* Section for non-text-location specific feedback */
+    #feedback-section {
+      display: none;
+      width: 90%;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .feedback-item {
+      padding: 8px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .feedback-details {
+      display: none;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      margin-bottom: 10px;
+      background-color: #f0f0f0;
+    }
+
+    .suggested-section {
+      padding: 5px;
+      background-color: #e6ffed;
+      border: 1px solid #2cbe4e;
+      word-wrap: break-word; /* Prevents text overflow */
+    }
+
+    /* Button styling for Feedback submission */
+    #submit-btn {
+      display: block;
+      width: 90%;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      background-color: #2cbe4e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #submit-btn:hover {
+      background-color: #24963b;
+    }
+
+    /* Spinner */
+    #spinner {
+      display: none; /* Hidden by default */
+      margin: 10px auto;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive design for narrower screens */
+    @media (max-width: 600px) {
+      .modal-content {
+        width: 80%;
+      }
+      .feature-row {
+        flex-direction: column; /* Stack feature key & value */
+        align-items: stretch;
+      }
+      .feature-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Title Bar for Prompt Editor -->
+  <div id="title">
+    <h1>Prompt Editor</h1>
+    <button id="open-init-modal-btn">Prompt Initialization</button>
+  </div>
+
+  <!-- CodeMirror Editor -->
+  <div id="editor"></div>
+  <div id="spinner"></div>
+  <button id="submit-btn">Submit for Feedback</button>
+
+  <!-- Feedback Section for non-text-location-specific feedback -->
+  <div id="feedback-section">
+    <!-- <h3></h3> -->
+  </div>
+
+  <!-- Modal for Prompt Initialization -->
+  <div id="init-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-modal">&times;</span>
+      <h2 id="modal-title">Prompt Initialization</h2>
+
+      <label for="task-input">Task Description:</label>
+      <input type="text" id="task-input" placeholder="Enter a short task description..." />
+
+      <label for="features-container" id="features-label">Additional Features:</label>
+      <div id="features-container">
+        <!-- One sample row (users can remove or add more) -->
+        <div class="feature-row">
+          <input type="text" class="feature-input feature-key" placeholder="Feature Key" />
+          <input type="text" class="feature-input feature-value" placeholder="Feature Value" />
+          <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+        </div>
+      </div>
+
+      <button id="add-feature-btn">+ Add Feature</button>
+      <button id="modal-initialize-btn">Initialize Prompt</button>
+    </div>
+  </div>
+
+  <!-- Include CodeMirror via script tags -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.js"></script>
+  <!-- Include necessary addons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/scroll/annotatescrollbar.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/search/searchcursor.min.js"></script>
+  <!-- Include theme and mode for syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/mode/javascript/javascript.min.js"></script>
+
+  <script>
+    // Initialize CodeMirror
+    var editor = CodeMirror(document.getElementById("editor"), {
+      value: `Type your prompt here...`,
+      lineNumbers: true,
+      mode: "javascript", // Adjust based on your text type
+      theme: "elegant",
+      readOnly: false
+    });
+
+    // Spinner handling
+    function showSpinner() {
+      document.getElementById("spinner").style.display = "block";
+    }
+    function hideSpinner() {
+      document.getElementById("spinner").style.display = "none";
+    }
+
+    // Modal elements
+    const initModal = document.getElementById("init-modal");
+    const openModalBtn = document.getElementById("open-init-modal-btn");
+    const closeModalBtn = document.getElementById("close-modal");
+
+    // Open modal
+    openModalBtn.addEventListener("click", function() {
+      initModal.style.display = "block";
+    });
+    // Close modal when user clicks X
+    closeModalBtn.addEventListener("click", function() {
+      initModal.style.display = "none";
+    });
+    // Close modal if user clicks outside the modal content
+    window.addEventListener("click", function(event) {
+      if (event.target === initModal) {
+        initModal.style.display = "none";
+      }
+    });
+
+    // ----- Feature Row Logic -----
+    const featuresContainer = document.getElementById("features-container");
+    const addFeatureBtn = document.getElementById("add-feature-btn");
+
+    // Helper: attach remove event to a feature-row
+    function attachRemoveEvent(row) {
+      const removeBtn = row.querySelector(".remove-feature-btn");
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+      });
+    }
+
+    // Attach remove event to the initial sample row
+    document.querySelectorAll(".feature-row").forEach((row) => {
+      attachRemoveEvent(row);
+    });
+
+    // Add a new feature row
+    addFeatureBtn.addEventListener("click", function() {
+      const newRow = document.createElement("div");
+      newRow.className = "feature-row";
+      newRow.innerHTML = `
+        <input type="text" class="feature-input feature-key" placeholder="Feature Key" />
+        <input type="text" class="feature-input feature-value" placeholder="Feature Value" />
+        <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+      `;
+      featuresContainer.appendChild(newRow);
+      attachRemoveEvent(newRow);
+    });
+
+    // ----- Prompt Initialization Logic -----
+    document.getElementById("modal-initialize-btn").addEventListener("click", function() {
+      const taskDescription = document.getElementById("task-input").value.trim();
+
+      // Collect feature key-value pairs into an object
+      const featureRows = document.querySelectorAll(".feature-row");
+      let additionalFeatures = {};
+      featureRows.forEach(row => {
+        const keyInput = row.querySelector(".feature-key").value.trim();
+        const valInput = row.querySelector(".feature-value").value.trim();
+        if (keyInput) {
+          additionalFeatures[keyInput] = valInput;
+        }
+      });
+
+      // Show spinner while fetching
+      showSpinner();
+
+      // Send the taskDescription + additionalFeatures to the backend
+      fetch("http://localhost:8000/prompt_initialization", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskDescription: taskDescription,
+          additionalFeatures: additionalFeatures
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Suppose the backend returns { generatedPrompt: "..." }
+        if (data.generatedPrompt) {
+          editor.setValue(data.generatedPrompt);
+        }
+        hideSpinner();
+        initModal.style.display = "none"; // Close the modal
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+
+    // Keep track of an open tooltip so we can close it if new feedback arrives
+    let openTooltip = null;
+
+    // ----- Prompt Improvement Logic -----
+    // A. Function to clear existing marks
+    function clearExistingFeedback(editor) {
+      editor.getAllMarks().forEach(mark => {
+        mark.clear();
+      });
+    }
+
+    // B. Function to apply in-text feedback highlights
+    function applyInTextFeedback(editor, feedbackItems) {
+      // Clear existing highlights/widgets
+      clearExistingFeedback(editor);
+
+      feedbackItems.forEach(item => {
+        var from = { line: item.fromLine, ch: item.fromCh || 0 };
+        var to = {
+          line: item.toLine,
+          ch: item.toCh !== null ? item.toCh : editor.getLine(item.toLine).length
+        };
+        // Highlight the text range
+        editor.markText(from, to, {
+          className: "feedback-highlight",
+          title: item.feedback // Store feedback text in 'title'
+        });
+      });
+    }
+
+    // C. Function to apply general feedback
+    function applyGeneralFeedback(generalFeedback) {
+      const feedbackSection = document.getElementById("feedback-section");
+      if (!generalFeedback || generalFeedback.length === 0) {
+        feedbackSection.style.display = "none";
+        return;
+      }
+      // Reset general feedback content
+      feedbackSection.innerHTML = "";
+      // feedbackSection.innerHTML = "<h3></h3>";
+      feedbackSection.style.display = "block";
+
+      generalFeedback.forEach((item, index) => {
+        const feedbackItem = document.createElement("div");
+        feedbackItem.id = "feedback-item-" + (index + 1);
+        feedbackItem.className = "feedback-item";
+        feedbackItem.textContent = item.title;
+        feedbackItem.onclick = () => toggleFeedbackDetails(index + 1);
+
+        const feedbackDetails = document.createElement("div");
+        feedbackDetails.id = "feedback-details-" + (index + 1);
+        feedbackDetails.className = "feedback-details";
+        feedbackDetails.innerHTML = `
+          <p><strong>Why it's important:</strong> ${item.reasoning}</p>
+          <div class="suggested-section">
+            Suggested section:
+            <pre>\n</pre>
+            <div>${item.suggestion}</div>
+          </div>
+        `;
+
+        feedbackSection.appendChild(feedbackItem);
+        feedbackSection.appendChild(feedbackDetails);
+      });
+    }
+
+    // Toggle feedback detail sections
+    function toggleFeedbackDetails(id) {
+      var item = document.getElementById('feedback-item-' + id);
+      item.style.marginBottom = item.style.marginBottom === '5px' ? '10px' : '5px';
+      var details = document.getElementById('feedback-details-' + id);
+      details.style.display = details.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // D. Submitting prompt for improvement feedback
+    document.getElementById("submit-btn").addEventListener("click", function() {
+      const prompt = editor.getValue();
+
+      // 1) Close any open tooltip from previous feedback
+      if (openTooltip) {
+        openTooltip.remove();
+        openTooltip = null;
+      }
+
+      // 2) Show spinner
+      showSpinner();
+
+      // 3) Fetch new feedback
+      fetch("http://localhost:8000/prompt_improvement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // 4) Apply new feedback
+        applyInTextFeedback(editor, data.inTextFeedback || []);
+        applyGeneralFeedback(data.generalFeedback || []);
+        hideSpinner();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+
+    // E. CLICK-based Tooltip logic for inline feedback
+    editor.on("mousedown", function(cm, event) {
+      // Find the position in the text where user clicked
+      let pos = editor.coordsChar({ left: event.clientX, top: event.clientY }, "window");
+      let marks = editor.findMarksAt(pos);
+      let highlightMark = marks.find(m => m.className === "feedback-highlight");
+
+      // If there's an existing tooltip, remove it before we open a new one
+      if (openTooltip) {
+        openTooltip.remove();
+        openTooltip = null;
+      }
+
+      // If the user clicked on a highlight, show the feedback
+      if (highlightMark && highlightMark.title) {
+        // Create a tooltip element
+        let tooltip = document.createElement("div");
+        tooltip.className = "tooltip";
+
+        // Insert the feedback text
+        tooltip.textContent = highlightMark.title;
+
+        // Add a close button
+        let closeBtn = document.createElement("button");
+        closeBtn.className = "tooltip-close-btn";
+        closeBtn.innerHTML = "&#10006;"; // X symbol
+        closeBtn.addEventListener("click", function(e) {
+          e.stopPropagation();
+          tooltip.remove();
+          openTooltip = null;
+        });
+        tooltip.appendChild(closeBtn);
+
+        // Position the tooltip near the click
+        tooltip.style.left = event.pageX + 5 + "px";  
+        tooltip.style.top = (event.pageY - 40) + "px";
+
+        // Add to the body
+        document.body.appendChild(tooltip);
+
+        // Keep a reference so we can close it on next highlight click
+        openTooltip = tooltip;
+      }
+    });
+  </script>
+</body>
+</html>

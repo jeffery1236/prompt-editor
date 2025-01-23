@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt Editor (Integrated)</title>
+  <!-- Include CodeMirror CSS -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/theme/elegant.min.css">
+
+  <!-- Custom Font and CSS Styles -->
+  <style>
+    body {
+      font-family: 'Fira Code', monospace;
+      background-color: #f0f0f0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3 {
+      font-family: sans-serif;
+      margin: 0;
+    }
+
+    /* Title bar for Prompt Editor */
+    #title {
+      width: 90%;
+      margin: 20px auto;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #open-init-modal-btn {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    #open-init-modal-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* The Modal overlay */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 999; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+    }
+    /* Modal Content/Box */
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 50%;
+      max-width: 600px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    /* Close Button */
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #000;
+    }
+
+    /* Modal form styling */
+    #modal-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-family: sans-serif;
+    }
+    #task-input {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    #features-label {
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+    #features-container {
+      margin-bottom: 8px;
+    }
+    .feature-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .feature-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .remove-feature-btn {
+      background-color: transparent;
+      border: none;
+      color: #777;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .remove-feature-btn:hover {
+      color: #e53935;
+    }
+    #add-feature-btn {
+      margin-top: 4px;
+      padding: 8px;
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    #add-feature-btn:hover {
+      background-color: #218838;
+    }
+    #modal-initialize-btn {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #modal-initialize-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Main editor & container */
+    /* We'll keep the editor left, feedback panel on the right */
+    #editor-container {
+      width: calc(100% - 270px);
+      float: left;
+      margin-bottom: 20px;
+      padding: 0 20px;
+    }
+    #editor {
+      width: 100%;
+      height: 500px;
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+    .CodeMirror {
+      border: 1px solid #eee;
+      height: 100%;
+    }
+
+    /* Spinner */
+    #spinner {
+      display: none;
+      margin: 10px auto;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #submit-btn {
+      display: block;
+      width: 90%;
+      max-width: 250px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #2cbe4e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #submit-btn:hover {
+      background-color: #24963b;
+    }
+
+    /* The side feedback panel */
+    #feedback-panel {
+      width: 250px;
+      float: right;
+      height: calc(100vh - 0px);
+      box-sizing: border-box;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-left: 1px solid #ccc;
+      overflow-y: auto;
+    }
+    #feedback-panel h3 {
+      font-family: sans-serif;
+      margin-top: 0;
+    }
+    .feedback-item {
+      border: 1px solid #ccc;
+      background-color: #fff;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .feedback-item:hover {
+      background-color: #e8f9e8;
+    }
+    .feedback-item-header {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .feedback-btn-group {
+      margin-top: 8px;
+    }
+    .accept-btn,
+    .decline-btn {
+      background-color: #007bff;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-right: 5px;
+    }
+    .accept-btn:hover {
+      background-color: #0056b3;
+    }
+    .decline-btn {
+      background-color: #888;
+    }
+    .decline-btn:hover {
+      background-color: #555;
+    }
+
+    /* Light green dotted underline for inline feedback */
+    .feedback-underline {
+      text-decoration: underline dotted #47d147;
+      cursor: pointer;
+    }
+    .feedback-underline-hover {
+      background-color: rgba(71, 209, 71, 0.2); /* highlight on hover */
+    }
+    .feedback-item-hover {
+      background-color: #adebad !important; /* highlight side panel item */
+    }
+
+    /* Responsive design for the modal */
+    @media (max-width: 600px) {
+      .modal-content {
+        width: 80%;
+      }
+      .feature-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .feature-input {
+        width: 100%;
+      }
+      #editor-container, #feedback-panel {
+        float: none;
+        width: 100%;
+      }
+      #feedback-panel {
+        border-left: none;
+        border-top: 1px solid #ccc;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Title Bar for Prompt Editor -->
+  <div id="title">
+    <h1>Prompt Editor</h1>
+    <button id="open-init-modal-btn">Prompt Initialization</button>
+  </div>
+
+  <!-- Left side: Editor container -->
+  <div id="editor-container">
+    <div id="editor"></div>
+    <div id="spinner"></div>
+    <button id="submit-btn">Submit for Feedback</button>
+  </div>
+
+  <!-- Right side: Feedback panel -->
+  <div id="feedback-panel">
+    <h3>Feedback Panel</h3>
+    <div id="inline-feedback-section">
+      <h4>Inline Feedback</h4>
+      <!-- Inline feedback entries appended here -->
+    </div>
+    <hr />
+    <div id="general-feedback-section">
+      <h4>General Suggestions</h4>
+      <!-- General feedback entries appended here -->
+    </div>
+  </div>
+
+  <!-- Modal for Prompt Initialization -->
+  <div id="init-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-modal">&times;</span>
+      <h2 id="modal-title">Prompt Initialization</h2>
+
+      <label for="task-input">Task Description:</label>
+      <input type="text" id="task-input" placeholder="Enter a short task description..." />
+
+      <label for="features-container" id="features-label">Additional Features:</label>
+      <div id="features-container">
+        <!-- One sample row (users can remove or add more) -->
+        <div class="feature-row">
+          <input type="text" class="feature-input feature-key" placeholder="Feature Key" />
+          <input type="text" class="feature-input feature-value" placeholder="Feature Value" />
+          <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+        </div>
+      </div>
+
+      <button id="add-feature-btn">+ Add Feature</button>
+      <button id="modal-initialize-btn">Initialize Prompt</button>
+    </div>
+  </div>
+
+  <!-- Include CodeMirror via script tags -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.js"></script>
+  <!-- Some addons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/scroll/annotatescrollbar.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/search/searchcursor.min.js"></script>
+  <!-- Include theme and mode for syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/mode/javascript/javascript.min.js"></script>
+
+  <script>
+    // ----- CodeMirror Initialization -----
+    const editor = CodeMirror(document.getElementById("editor"), {
+      value: `Type your prompt here...`,
+      lineNumbers: true,
+      mode: "javascript",
+      theme: "elegant",
+      readOnly: false
+    });
+
+    // Spinner
+    function showSpinner() {
+      document.getElementById("spinner").style.display = "block";
+    }
+    function hideSpinner() {
+      document.getElementById("spinner").style.display = "none";
+    }
+
+    // ----- Modal Handling -----
+    const initModal = document.getElementById("init-modal");
+    const openModalBtn = document.getElementById("open-init-modal-btn");
+    const closeModalBtn = document.getElementById("close-modal");
+
+    openModalBtn.addEventListener("click", function() {
+      initModal.style.display = "block";
+    });
+    closeModalBtn.addEventListener("click", function() {
+      initModal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+      if (event.target === initModal) {
+        initModal.style.display = "none";
+      }
+    });
+
+    // ----- Feature Row Logic -----
+    const featuresContainer = document.getElementById("features-container");
+    const addFeatureBtn = document.getElementById("add-feature-btn");
+
+    function attachRemoveEvent(row) {
+      const removeBtn = row.querySelector(".remove-feature-btn");
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+      });
+    }
+    document.querySelectorAll(".feature-row").forEach((row) => {
+      attachRemoveEvent(row);
+    });
+    addFeatureBtn.addEventListener("click", function() {
+      const newRow = document.createElement("div");
+      newRow.className = "feature-row";
+      newRow.innerHTML = `
+        <input type="text" class="feature-input feature-key" placeholder="Feature Key" />
+        <input type="text" class="feature-input feature-value" placeholder="Feature Value" />
+        <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+      `;
+      featuresContainer.appendChild(newRow);
+      attachRemoveEvent(newRow);
+    });
+
+    // ----- Prompt Initialization Logic -----
+    document.getElementById("modal-initialize-btn").addEventListener("click", function() {
+      const taskDescription = document.getElementById("task-input").value.trim();
+
+      // Collect feature key-value pairs
+      const featureRows = document.querySelectorAll(".feature-row");
+      let additionalFeatures = {};
+      featureRows.forEach(row => {
+        const keyInput = row.querySelector(".feature-key").value.trim();
+        const valInput = row.querySelector(".feature-value").value.trim();
+        if (keyInput) {
+          additionalFeatures[keyInput] = valInput;
+        }
+      });
+
+      // Show spinner while fetching
+      showSpinner();
+
+      fetch("http://localhost:8000/prompt_initialization", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskDescription: taskDescription,
+          additionalFeatures: additionalFeatures
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.generatedPrompt) {
+          editor.setValue(data.generatedPrompt);
+        }
+        hideSpinner();
+        initModal.style.display = "none";
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+
+    // ----- Separate Data Structures for Feedback -----
+    let inlineFeedback = [];  // { id, fromLine, fromCh, toLine, toCh, message }
+    let generalFeedback = []; // { id, message, suggestion }
+
+    let feedbackMarkers = {}; // Map feedbackId -> CodeMirror.TextMarker
+
+    // ----- Clear Old Feedback -----
+    function clearOldFeedback() {
+      // Remove old markers
+      Object.values(feedbackMarkers).forEach(marker => marker.clear());
+      feedbackMarkers = {};
+
+      // Clear side panel
+      document.getElementById("inline-feedback-section").innerHTML = "<h4>Inline Feedback</h4>";
+      document.getElementById("general-feedback-section").innerHTML = "<h4>General Suggestions</h4>";
+    }
+
+    // ----- Apply Inline Feedback -----
+    function applyInlineFeedback() {
+      inlineFeedback.forEach(item => {
+        let from = { line: item.fromLine, ch: item.fromCh };
+        let to = { line: item.toLine, ch: item.toCh };
+        let marker = editor.markText(from, to, { className: "feedback-underline" });
+        feedbackMarkers[item.id] = marker;
+      });
+    }
+
+    // ----- Render Inline Feedback in Panel -----
+    function renderInlineFeedbackPanel() {
+      const inlineSection = document.getElementById("inline-feedback-section");
+      inlineFeedback.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "feedback-item";
+        div.setAttribute("data-id", item.id);
+
+        div.innerHTML = `
+          <div class="feedback-item-header">Inline Message</div>
+          <div>${item.message}</div>
+        `;
+        // Hover in side panel -> highlight text
+        div.addEventListener("mouseenter", () => highlightEditorText(item.id));
+        div.addEventListener("mouseleave", () => unhighlightEditorText(item.id));
+
+        inlineSection.appendChild(div);
+      });
+    }
+
+    // ----- Render General Feedback (with Accept/Decline) in Panel -----
+    function renderGeneralFeedbackPanel() {
+      const generalSection = document.getElementById("general-feedback-section");
+      generalFeedback.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "feedback-item";
+        div.setAttribute("data-id", item.id);
+
+        div.innerHTML = `
+          <div class="feedback-item-header">General Suggestion</div>
+          <div>${item.message}</div>
+          <div style="margin-top: 6px;"><strong>Suggestion:</strong> ${item.suggestion}</div>
+          <div class="feedback-btn-group">
+            <button class="accept-btn">Accept</button>
+            <button class="decline-btn">Decline</button>
+          </div>
+        `;
+        // Accept -> append suggestion (end of prompt for now)
+        div.querySelector(".accept-btn").addEventListener("click", () => {
+          const currentText = editor.getValue();
+          editor.setValue(currentText + "\n" + item.suggestion);
+          removeGeneralFeedbackItem(item.id);
+        });
+        // Decline -> remove
+        div.querySelector(".decline-btn").addEventListener("click", () => {
+          removeGeneralFeedbackItem(item.id);
+        });
+        generalSection.appendChild(div);
+      });
+    }
+
+    function removeGeneralFeedbackItem(id) {
+      generalFeedback = generalFeedback.filter(obj => obj.id !== id);
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) el.remove();
+    }
+
+    // ----- Hover Sync (Editor -> Panel) -----
+    editor.getWrapperElement().addEventListener("mousemove", (e) => {
+      const pos = editor.coordsChar({ left: e.clientX, top: e.clientY }, "window");
+      const marks = editor.findMarksAt(pos);
+      if (!marks.length) {
+        unhighlightAllSidePanelItems();
+        return;
+      }
+      const feedbackMarker = marks.find(m => m.className === "feedback-underline");
+      if (!feedbackMarker) {
+        unhighlightAllSidePanelItems();
+        return;
+      }
+      let foundId = Object.keys(feedbackMarkers).find(id => feedbackMarkers[id] === feedbackMarker);
+      highlightSidePanelItem(foundId);
+    });
+
+    function highlightSidePanelItem(feedbackId) {
+      unhighlightAllSidePanelItems();
+      const itemEl = document.querySelector(`[data-id="${feedbackId}"]`);
+      if (itemEl) {
+        itemEl.classList.add("feedback-item-hover");
+      }
+    }
+    function unhighlightAllSidePanelItems() {
+      document.querySelectorAll(".feedback-item-hover").forEach(el => {
+        el.classList.remove("feedback-item-hover");
+      });
+    }
+
+    // ----- Hover Sync (Panel -> Editor) -----
+    function highlightEditorText(feedbackId) {
+      const marker = feedbackMarkers[feedbackId];
+      if (!marker) return;
+      // We'll highlight the underlying DOM with an extra class
+      const elements = document.querySelectorAll(".feedback-underline");
+      elements.forEach(el => {
+        // A quick approach: if the marker is the same (for a single range),
+        // we add the class. In more complex code, you'd map the actual spans
+        el.classList.add("feedback-underline-hover");
+      });
+    }
+    function unhighlightEditorText(feedbackId) {
+      const elements = document.querySelectorAll(".feedback-underline-hover");
+      elements.forEach(el => el.classList.remove("feedback-underline-hover"));
+    }
+
+    // ----- "Submit for Feedback" -> Example Integration -----
+    // Here we simulate calling your backend for improvement feedback
+    document.getElementById("submit-btn").addEventListener("click", function() {
+      // Show spinner during fetch
+      showSpinner();
+
+      const prompt = editor.getValue();
+      fetch("http://localhost:8000/prompt_improvement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Suppose the backend returns data in the shape:
+        // { inlineFeedback: [...], generalFeedback: [...] }
+        inlineFeedback = data.inlineFeedback || [];
+        generalFeedback = data.generalFeedback || [];
+
+        // 1) Clear old
+        clearOldFeedback();
+        // 2) Mark inline text
+        applyInlineFeedback();
+        // 3) Render panel items
+        renderInlineFeedbackPanel();
+        renderGeneralFeedbackPanel();
+
+        hideSpinner();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+  </script>
+</body>
+</html>
