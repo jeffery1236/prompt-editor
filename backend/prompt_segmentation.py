@@ -5,22 +5,22 @@ from chatgpt import ChatGPTHelper, ChatMessage
 
 class SECTION_TYPES(Enum):
     ROLE_ASSIGNMENT = "Role Assignment"
-    INPUT_DEFINITIONS = "Input Definitions"
+    INPUT_DESCRIPTION = "Input Description"
     TASK_DESCRIPTION = "Task.Description"
     TASK_INSTRUCTIONS = "Task.Instructions"
-    TASK_CONSTRAINTS = "Task.Constraints"
-    TASK_OUTPUT_FORMAT = "Task.Output-Format"
+    TASK_OUTPUT_FORMAT = "Task.Output-format"
     EXAMPLES = "Examples"
 
 class PromptSegment(BaseModel):
     type: SECTION_TYPES
     content: str
 
-def collate_sections_from_classified_sentences(llm_output_json : dict):
+def collate_sections_from_classified_sentences(sentences_and_segment_types : list[dict]):
     sections = defaultdict(list)
     current_sections = {}
 
-    for sentence, section_types in llm_output_json.items():
+    for sentence_and_segment_type in sentences_and_segment_types:
+        sentence, section_types = sentence_and_segment_type["sentence"], sentence_and_segment_type["section_types"]
         for section_type in section_types:
             if section_type in current_sections:
                 current_sections[section_type] += "\n" + sentence
@@ -28,23 +28,21 @@ def collate_sections_from_classified_sentences(llm_output_json : dict):
                 current_sections[section_type] = sentence
         
         # If this sentence is the start of a new section, eject the current sections and delete them from the current_sections dict
-        stored_section_types = list(current_sections.keys())
-        for stored_section_type in stored_section_types:
-            if stored_section_type not in section_types:
-                sections[stored_section_type].append(current_sections[stored_section_type])
-                del current_sections[stored_section_type]
+        stored_segment_types = list(current_sections.keys())
+        for stored_segment_type in stored_segment_types:
+            if stored_segment_type not in section_types:
+                sections[stored_segment_type].append(current_sections[stored_segment_type])
+                del current_sections[stored_segment_type]
 
-    for stored_section_type, stored_section in current_sections.items():
-        sections[stored_section_type].append(stored_section)
+    for stored_segment_type, stored_section in current_sections.items():
+        sections[stored_segment_type].append(stored_section)
     return sections
 
 async def get_segmented_prompt(prompt: str) -> list[PromptSegment]:
     sentence_wise_segmentation_system_prompt = """# Introduction
     You are a text preprocessing and parsing expert. Your job is to take a given prompt, break it down into meaningful sentences, and classify them into one or more of the following types:
     - Role Assignment: Specifies the assumed expertise or persona of the LLM. Identify the role the LLM should adopt, such as "expert chef" or "financial analyst."
-    - Input.Explanations: Explains the meaning of the input attributes or features, helping the LLM understand what each input represents.
-    - Input.Values: Provides the actual values of the input attributes or features. This might be in the form of placeholders or expressions in curly brackets '{}'.
-    - Input.Focus-Areas: Specifies the key elements or areas in the inputs to focus on for the task.
+    - Input Description: Describes the input features, helping the LLM understand what inputs to expect, what defines a valid input, what to focus on etc.
     - Task.Description: Provides a high-level overview of the task, focusing on what needs to be done, but without including specific details or steps on how to execute it. Do not include concrete instructions here.
     - Task.Instructions: Outlines the instructions for how the LLM should perform the task. This section includes actions the LLM should take, but not formatting details.
     - Task.Instructions.Rules: Describes the rules or conditions that the LLM must adhere to while completing the task.
@@ -63,11 +61,17 @@ async def get_segmented_prompt(prompt: str) -> list[PromptSegment]:
         - If you are still unsure whether a sentence belongs to section type A or B, include both.
     3. Return the result as a JSON object in the format below:
     ```json
-    {
-        "<sentence 1>: [<category X>, // add more categories as necessary] 
-        "<sentence 2>: [<category Y>, // add more categories as necessary] 
+    [
+        {
+            "sentence": <sentence 1>,
+            "section_types": [<category X>, // add more categories as necessary],
+        },
+        {
+            "sentence": <sentence 2>,
+            "section_types": [<category Y>, // add more categories as necessary],
+        },
         // Add more sentences as necessary
-    }
+    ]
     ```
     Ensure that all special characters in the keys and values of the generated JSON, such as quotation marks ("), backslashes (\), and other special symbols, are properly escaped.
     """
@@ -90,21 +94,31 @@ async def get_segmented_prompt(prompt: str) -> list[PromptSegment]:
 
     JSON Output:
     ```json
-    {
-        "You are an expert chef with over 20 years of experience, and your task is to create a recipe for a gluten-free pasta dish.": ["Role Assignment", "Task.Description"],
-        "The input will be a list of ingredients provided by the user, each with its corresponding quantity.": ["Input Definitions"],
-        "You should also avoid using any ingredients that are not listed in the input.": ["Task.Constraints"],
-        "First, analyze each of the provided ingredients.": ["Task.Instructions"],
-        "Next, consider what type of cuisines can be made with the ingredients.": ["Task.Instructions"],
-        "Then, creatively brainstorm recipes.": ["Task.Instructions"],
-        "You should avoid using any gluten-containing products in the recipe.": ["Task.Constraints"],
-        "Ensure that the recipe includes no more than 5 ingredients, and that it can be prepared in under 30 minutes.": ["Task.Constraints"],
-        "Your output should be formatted in JSON with two sections: 'ingredients' and 'steps.'": ["Task.Output-format"],
-        "Each step should be numbered.": ["Task.Output-format"],
-        "For example:": ["Examples"],
-        "Input: [\"pasta\", \"olive oil\", \"garlic\"]\n": ["Examples"]
-        "Output: {\\n    \\"ingredients\\": [\\"pasta\\", \\"olive oil\\", \\"garlic\\"],\\n    \\"steps\\": [\\"Boil pasta\\", \\"Heat olive oil\\", \\"Cook garlic in oil\\"]\\n}": ["Examples"]
-    }```"""
+   [{'sentence': 'You are an expert chef with over 20 years of experience, and your task is to create a recipe for a gluten-free pasta dish.',
+  'section_types': ['Role Assignment', 'Task.Description']},
+ {'sentence': 'The input will be a list of ingredients provided by the user, each with its corresponding quantity.',
+  'section_types': ['Input Description']},
+ {'sentence': 'You should also avoid using any ingredients that are not listed in the input.',
+  'section_types': ['Input Description']},
+ {'sentence': 'First, analyze each of the provided ingredients.',
+  'section_types': ['Task.Instructions']},
+ {'sentence': 'Next, consider what type of cuisines can be made with the ingredients.',
+  'section_types': ['Task.Instructions']},
+ {'sentence': 'Then, creatively brainstorm recipes.',
+  'section_types': ['Task.Instructions']},
+ {'sentence': 'You should avoid using any gluten-containing products in the recipe.',
+  'section_types': ['Task.Instructions']},
+ {'sentence': 'Ensure that the recipe includes no more than 5 ingredients, and that it can be prepared in under 30 minutes.',
+  'section_types': ['Task.Instructions']},
+ {'sentence': "Your output should be formatted in JSON with two sections: 'ingredients' and 'steps.'",
+  'section_types': ['Task.Output-format']},
+ {'sentence': 'Each step should be numbered.',
+  'section_types': ['Task.Output-format']},
+ {'sentence': 'For example:', 'section_types': ['Examples']},
+ {'sentence': 'Input: ["pasta", "olive oil", "garlic"]\n',
+  'section_types': ['Examples']},
+ {'sentence': 'Output: {\\n    \\"ingredients\\": [\\"pasta\\", \\"olive oil\\", \\"garlic\\"],\\n    \\"steps\\": [\\"Boil pasta\\", \\"Heat olive oil\\", \\"Cook garlic in oil\\"]\\n}',
+  'section_types': ['Examples']}]```"""
 
     chat_messages = [
         ChatMessage(role="system", content=sentence_wise_segmentation_system_prompt),
@@ -113,11 +127,12 @@ async def get_segmented_prompt(prompt: str) -> list[PromptSegment]:
     
     chatgpt_helper = ChatGPTHelper()
     response_content = await chatgpt_helper.get_chat_response_content(chat_messages)
-    sentences_to_section_types = chatgpt_helper.extract_json_from_response(response_content)
-    sections = collate_sections_from_classified_sentences(sentences_to_section_types)
-    print("JSON Response1:", sections)
+    print("content", response_content)
+    sentences_and_segment_types = chatgpt_helper.extract_json_from_response(response_content)
+    print('Sentence Segments: ', sentences_and_segment_types)
+    sections = collate_sections_from_classified_sentences(sentences_and_segment_types)
 
-    prompt_segments = []
+    prompt_segments: list[PromptSegment] = []
     all_section_types = set([section.value for section in SECTION_TYPES])
     for section, content in sections.items():
         if section in all_section_types:
@@ -134,7 +149,7 @@ async def get_segmented_prompt(prompt: str) -> list[PromptSegment]:
 #     segmentation_system_prompt = """You are an expert in prompt segmentation. Your job is to read a given prompt text and segment it into the following categories:
 
 # - Role Assignment: Specifies the assumed expertise or persona of the LLM. Identify the role the LLM should adopt, such as "expert chef" or "financial analyst."
-# - Input Definitions: Provides descriptions about the meaning or features of the inputs to the task, including any statistics, ranges, or constraints related to the inputs. It should capture details like the type of input expected (e.g., a list of ingredients, a set of numbers) and specific characteristics about the inputs provided. Do not classify example input-output pairs here. They belong in the Output Descriptions and Examples section.
+# - Input Description: Provides descriptions about the meaning or features of the inputs to the task, including any statistics, ranges, or constraints related to the inputs. It should capture details like the type of input expected (e.g., a list of ingredients, a set of numbers) and specific characteristics about the inputs provided. Do not classify example input-output pairs here. They belong in the Output Descriptions and Examples section.
 # - Task.Description: Provides a high-level overview of the task, focusing on what needs to be done, but without including specific details or steps on how to execute it. Do not include concrete instructions or constraints here.
 # - Task.Instructions: Outlines the step-by-step instructions for performing the task. This section includes actions the LLM should take, but not constraints or formatting details.
 # - Task.Constraints: Specifies any limitations, rules, or conditions that the LLM must adhere to while completing the task. This includes word limits, forbidden terms, or other task-specific restrictions.

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
+from prompt_initialization import PromptInitializer
 from prompt_segmentation import get_segmented_prompt, SECTION_TYPES
 from general_feedback import get_general_feedback, GeneralFeedback
 from in_text_feedback import InTextFeedback, get_in_text_feedback
@@ -27,6 +28,9 @@ class PromptImprovementInputs(BaseModel):
 class PromptInitializationInputs(BaseModel):
     short_task_description: str
     additional_features: dict
+
+class PromptInitializationResponse(BaseModel):
+    prompt: str
 
 @app.post(
     "/prompt_improvement",
@@ -63,13 +67,18 @@ async def get_prompt_improvement(request_transport: PromptImprovementInputs) -> 
         generalFeedback=general_feedback if missing_sections else []
     )
 
-app.post(
+@app.post(
     "/prompt_initialization",
     operation_id="getPromptInitialization",
-    response_model=str,
+    response_model=PromptInitializationResponse,
 )
-async def get_prompt_initialization(request_transport: PromptInitializationInputs) -> str:
-    return 
+async def get_prompt_initialization(request_transport: PromptInitializationInputs) -> PromptInitializationResponse:
+    prompt = await PromptInitializer.get_prompt_initialization_outputs(
+        short_task_description=request_transport.short_task_description,
+        input_feature_descriptions=request_transport.additional_features
+    )
+
+    return PromptInitializationResponse(prompt=prompt)
 
 if __name__ == "__main__":
     import uvicorn
