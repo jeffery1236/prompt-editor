@@ -70,7 +70,8 @@ class ChatGPTHelper:
             json_str = input_text[start:end]
             return json.loads(json_str)
 
-        json_pattern = re.compile(r"```json\s*(\{.*?\})\s*```|```\s*(\{.*?\})\s*```", re.DOTALL)
+        # json_pattern = re.compile(r"```json\s*(\{.*?\})\s*```|```\s*(\{.*?\})\s*```", re.DOTALL)
+        json_pattern = re.compile(r"```json\s*(\{.*?\}|\[.*?\])\s*```", re.DOTALL)
         match = json_pattern.search(content)
         if match:
             json_str = match.group(1) if match.group(1) else match.group(2)
