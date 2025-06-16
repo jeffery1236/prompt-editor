@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt Editor UI</title>
+  <!-- Include CodeMirror CSS -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/theme/elegant.min.css">
+
+  <style>
+    /* ===========================
+       Global / Layout
+       =========================== */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif; /* Swap in a font you prefer */
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: normal;
+    }
+
+    /* A container for the entire page content */
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ===========================
+       Title Bar
+       =========================== */
+    #title {
+      width: 100%;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #open-init-modal-btn {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.2s ease;
+    }
+    #open-init-modal-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* ===========================
+       Main Content Layout
+       =========================== */
+    #content-area {
+      display: flex;
+      flex: 1;
+      gap: 20px;
+      align-items: stretch;
+      /* min-height: 600px; */
+      /* For smaller screens, revert to column layout */
+      flex-wrap: wrap;
+    }
+    /* If there's NO feedback, hide feedback container and stretch editor to 100% */
+      #content-area.no-feedback #feedback-container {
+        display: none;
+      }
+
+    /* Editor Column */
+    #editor-container {
+      flex: 1 1 60%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 300px; /* Ensures it doesn't shrink too much on smaller screens */
+      overflow: hidden;
+    }
+    #content-area.no-feedback #editor-container {
+      flex: 1 1 100%;
+      min-width: 100%;
+      max-width: 100%;
+    }
+    /* Feedback Column */
+    #feedback-container {
+      flex: 1 1 35%;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    /* ===========================
+       Editor, Submit & Spinner
+       =========================== */
+    #editor {
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+      max-height: 65vh;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+    }
+    .CodeMirror {
+      height: 100%;
+    }
+
+    #spinner {
+      display: none;
+      margin: 0 auto;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #submit-btn {
+      padding: 10px;
+      background-color: #2cbe4e;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #submit-btn:hover {
+      background-color: #24963b;
+    }
+
+    /* ===========================
+       Feedback Section (General)
+       =========================== */
+    #feedback-section {
+      display: none; /* Shown if there's feedback */
+      width: 100%;
+    }
+    /* A card or panel style for each feedback item */
+    .feedback-card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+      transition: box-shadow 0.2s ease;
+      cursor: pointer; /* If clickable for toggling details */
+    }
+    .feedback-card:hover {
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    .feedback-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ddd;
+      background-color: #fafafa;
+    }
+    .feedback-item-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .feedback-item-body {
+      padding: 10px 14px;
+      max-height: 45vh;
+      display: none; /* collapsed by default */
+      font-size: 14px;
+      overflow-y: auto;
+    }
+    .feedback-item-body strong {
+      display: block;
+      text-align: left;
+    }
+    .feedback-card.open .feedback-item-body {
+      display: block;
+    }
+    .suggested-section {
+      padding: 5px;
+      background-color: #e6ffed;
+      border: 1px solid #2cbe4e;
+      border-radius: 4px;
+      word-wrap: break-word;
+      margin-top: 10px;
+      white-space: pre-wrap; /* preserve newlines */
+      text-align: left;
+    }
+    .reference-section {
+      padding: 5px;
+      background-color: #ffffe6;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      word-wrap: break-word;
+      margin-top: 10px;
+      white-space: pre-wrap; /* preserve newlines */
+      text-align: left;
+    }
+
+    /* ===========================
+       Inline Feedback Highlight
+       =========================== */
+    .feedback-highlight {
+      background-color: rgba(255, 255, 0, 0.4);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .feedback-highlight:hover {
+      background-color: rgba(255, 255, 0, 0.6);
+    }
+
+    /* ===========================
+       Tooltip for In-Text Feedback
+       =========================== */
+    .tooltip {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 10px 30px 10px 10px;
+      border-radius: 6px;
+      font-family: sans-serif;
+      font-size: 14px;
+      color: #333;
+      z-index: 10;
+      max-width: 400px;
+      /* allow wrapping of text */
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .tooltip-close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: transparent;
+      border: none;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .tooltip-close-btn:hover {
+      color: #000;
+    }
+    .tooltip-reference {
+      margin-top: 10px;
+      background-color: #ffffe6;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px;
+      white-space: pre-wrap; /* preserve newlines */
+      max-height: 150px;
+      overflow-y: auto;
+      text-align: left;
+    }
+    .tooltip-reference strong {
+      display: block;
+      text-align: left;
+    }
+
+
+    /* ===========================
+       Modal
+       =========================== */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    #modal-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 50%;
+      max-width: 600px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #000;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    #task-input {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .feature-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .feature-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .remove-feature-btn {
+      background-color: transparent;
+      border: none;
+      color: #777;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .remove-feature-btn:hover {
+      color: #e53935;
+    }
+    #add-feature-btn {
+      margin-top: 4px;
+      padding: 8px;
+      background-color: #28a745;
+      color: #fff;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    #add-feature-btn:hover {
+      background-color: #218838;
+    }
+    #modal-initialize-btn {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #modal-initialize-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      #content-area {
+        flex-direction: column;
+      }
+      #editor-container, #feedback-container {
+        flex: 1 1 100%;
+        min-width: auto;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Main container for entire page -->
+  <div id="main-container">
+    <!-- Title Bar -->
+    <div id="title">
+      <h1>Prompt Editor</h1>
+      <button id="open-init-modal-btn">Prompt Initialization</button>
+    </div>
+
+    <!-- Content Area: Editor + Feedback side by side -->
+    <div id="content-area">
+      <!-- Left / Editor Column -->
+      <div id="editor-container">
+        <div id="editor"></div>
+        <div id="spinner"></div>
+        <button id="submit-btn">Submit for Feedback</button>
+      </div>
+
+      <!-- Right / Feedback Column -->
+      <div id="feedback-container">
+        <div id="feedback-section"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Prompt Initialization -->
+  <div id="init-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-modal">&times;</span>
+      <h2 id="modal-title">Prompt Initialization</h2>
+
+      <label for="task-input">Task Description:</label>
+      <input type="text" id="task-input" placeholder="Enter a short task description..." />
+
+      <label for="features-container" id="features-label">Input Features:</label>
+      <div id="features-container">
+        <div class="feature-row">
+          <input type="text" class="feature-input feature-key" placeholder="Feature Name" />
+          <input type="text" class="feature-input feature-value" placeholder="Feature Description" />
+          <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+        </div>
+      </div>
+      <button id="add-feature-btn">+ Add Feature</button>
+      <button id="modal-initialize-btn">Initialize Prompt</button>
+    </div>
+  </div>
+
+  <!-- Include CodeMirror Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/scroll/annotatescrollbar.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.9/mode/javascript/javascript.min.js"></script>
+
+  <script>
+    /* ===========================
+       CodeMirror Initialization
+       =========================== */
+    const editor = CodeMirror(document.getElementById("editor"), {
+      value: `Type your prompt here...`,
+      lineNumbers: true,
+      lineWrapping: true,
+      mode: "markdown",
+      theme: "elegant",
+      tabSize: 4,
+      indentWithTabs: true,
+      readOnly: false
+    });
+
+    /* ===========================
+       Spinner Handling
+       =========================== */
+    function showSpinner() {
+      document.getElementById("spinner").style.display = "block";
+    }
+    function hideSpinner() {
+      document.getElementById("spinner").style.display = "none";
+    }
+
+    /* ===========================
+       Modal Handling
+       =========================== */
+    const initModal = document.getElementById("init-modal");
+    const openModalBtn = document.getElementById("open-init-modal-btn");
+    const closeModalBtn = document.getElementById("close-modal");
+
+    openModalBtn.addEventListener("click", function() {
+      initModal.style.display = "block";
+    });
+    closeModalBtn.addEventListener("click", function() {
+      initModal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+      if (event.target === initModal) {
+        initModal.style.display = "none";
+      }
+    });
+
+    /* ===========================
+       Feature Row Logic
+       =========================== */
+    const featuresContainer = document.getElementById("features-container");
+    const addFeatureBtn = document.getElementById("add-feature-btn");
+
+    function attachRemoveEvent(row) {
+      const removeBtn = row.querySelector(".remove-feature-btn");
+      removeBtn.addEventListener("click", () => {
+        row.remove();
+      });
+    }
+    document.querySelectorAll(".feature-row").forEach((row) => {
+      attachRemoveEvent(row);
+    });
+    addFeatureBtn.addEventListener("click", function() {
+      const newRow = document.createElement("div");
+      newRow.className = "feature-row";
+      newRow.innerHTML = `
+        <input type="text" class="feature-input feature-key" placeholder="Feature Name" />
+        <input type="text" class="feature-input feature-value" placeholder="Feature Description" />
+        <button type="button" class="remove-feature-btn" title="Remove this feature row">×</button>
+      `;
+      featuresContainer.appendChild(newRow);
+      attachRemoveEvent(newRow);
+    });
+
+    /* ===========================
+       Prompt Initialization Logic
+       =========================== */
+    document.getElementById("modal-initialize-btn").addEventListener("click", function() {
+      const taskDescription = document.getElementById("task-input").value.trim();
+      const featureRows = document.querySelectorAll(".feature-row");
+      let additionalFeatures = {};
+
+      featureRows.forEach(row => {
+        const keyInput = row.querySelector(".feature-key").value.trim();
+        const valInput = row.querySelector(".feature-value").value.trim();
+        if (keyInput) {
+          additionalFeatures[keyInput] = valInput;
+        }
+      });
+
+      showSpinner();
+      initModal.style.display = "none";
+
+      fetch("http://localhost:8000/prompt_initialization", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          short_task_description: taskDescription,
+          additional_features: additionalFeatures
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.prompt) {
+          editor.setValue(data.prompt);
+        }
+        hideSpinner();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+
+    /* ===========================
+       Feedback Handling
+       =========================== */
+    let openTooltip = null;
+
+    // Clear existing marks
+    function clearExistingFeedback(editorInstance) {
+      editorInstance.getAllMarks().forEach(mark => {
+        mark.clear();
+      });
+    }
+
+    // In-text feedback (highlight)
+    function applyInTextFeedback(editorInstance, feedbackItems) {
+      clearExistingFeedback(editorInstance);
+
+      feedbackItems.forEach(item => {
+        const from = { line: item.fromLine, ch: item.fromCh || 0 };
+        const to = { 
+          line: item.toLine, 
+          ch: (item.toCh !== null && item.toCh !== undefined)
+               ? item.toCh
+               : editorInstance.getLine(item.toLine).length
+        };
+
+        // Mark the text and restore the "title" attribute for hover tooltip
+        let mark = editorInstance.markText(from, to, {
+          className: "feedback-highlight",
+          title: item.feedback // default browser tooltip on hover
+        });
+        // Store custom data for click-based tooltip
+        mark.__feedbackText = item.feedback || "";
+        mark.__referenceSegment = item.referenceSegment || null;
+      });
+    }
+
+    // General feedback (cards)
+    function applyGeneralFeedback(generalFeedback) {
+      const feedbackSection = document.getElementById("feedback-section");
+      const contentArea = document.getElementById("content-area");
+      
+      if (!generalFeedback || generalFeedback.length === 0) {
+        console.log('here0')
+        feedbackSection.style.display = "none";
+        contentArea.classList.add("no-feedback");
+        return;
+      }
+      contentArea.classList.remove("no-feedback");
+      feedbackSection.style.display = "block";
+      feedbackSection.innerHTML = ""; // reset
+
+      generalFeedback.forEach((item, index) => {
+        /* Build a card container */
+        const card = document.createElement("div");
+        card.className = "feedback-card";
+        card.id = `feedback-card-${index + 1}`;
+
+        /* Header (title) */
+        const header = document.createElement("div");
+        header.className = "feedback-item-header";
+        const title = document.createElement("div");
+        title.className = "feedback-item-title";
+        title.textContent = item.title || "Feedback";
+        header.appendChild(title);
+
+        // Click to toggle
+        header.addEventListener("click", () => {
+          card.classList.toggle("open");
+        });
+
+        /* Body (details) */
+        const body = document.createElement("div");
+        body.className = "feedback-item-body";
+
+        // If there's a reference segment, wrap it in .reference-section
+        let referenceBlock = "";
+        if (item.referenceSegment) {
+          referenceBlock = `
+            <div class="reference-section">
+              <strong>Reference snippet:</strong>
+              ${item.referenceSegment}
+            </div>
+          `;
+        }
+
+        body.innerHTML = `
+          <p><strong>Why it's important:</strong> ${item.reasoning}</p>
+          <div class="suggested-section">
+          <strong>Suggested section:</strong>
+            <div>${item.suggestion}</div>
+          </div>
+          ${referenceBlock}
+        `;
+
+        /* Combine in the card */
+        card.appendChild(header);
+        card.appendChild(body);
+        feedbackSection.appendChild(card);
+      });
+    }
+
+    applyGeneralFeedback([]);
+
+    // Submit prompt for improvement
+    document.getElementById("submit-btn").addEventListener("click", function() {
+      const prompt = editor.getValue();
+
+      if (openTooltip) {
+        openTooltip.remove();
+        openTooltip = null;
+      }
+      showSpinner();
+
+      fetch("http://localhost:8000/prompt_improvement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+      })
+      .then(response => response.json())
+      .then(data => {
+        /*
+          Example structure:
+          {
+            inTextFeedback: [
+              { fromLine: 0, fromCh: 5, toLine: 0, toCh: 10, feedback: "...", referenceSegment: "..." }
+            ],
+            generalFeedback: [
+              { title: "...", reasoning: "...", suggestion: "...", referenceSegment: "..." }
+            ]
+          }
+        */
+        applyInTextFeedback(editor, data.inTextFeedback || []);
+        applyGeneralFeedback(data.generalFeedback || []);
+        hideSpinner();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        hideSpinner();
+      });
+    });
+
+    /* ===========================
+       Click-based Tooltip Logic
+       =========================== */
+    editor.on("mousedown", function(cm, event) {
+      let pos = editor.coordsChar({ left: event.clientX, top: event.clientY }, "window");
+      let marks = editor.findMarksAt(pos);
+      let highlightMark = marks.find(m => m.className === "feedback-highlight");
+
+      if (openTooltip) {
+        openTooltip.remove();
+        openTooltip = null;
+      }
+
+      if (highlightMark && highlightMark.__feedbackText) {
+        let tooltip = document.createElement("div");
+        tooltip.className = "tooltip";
+
+        tooltip.textContent = highlightMark.__feedbackText;
+
+        // Close button
+        let closeBtn = document.createElement("button");
+        closeBtn.className = "tooltip-close-btn";
+        closeBtn.innerHTML = "&#10006;";
+        closeBtn.addEventListener("click", function(e) {
+          e.stopPropagation();
+          tooltip.remove();
+          openTooltip = null;
+        });
+        tooltip.appendChild(closeBtn);
+
+        // If there's a reference snippet, show it
+        if (highlightMark.__referenceSegment) {
+          let refDiv = document.createElement("div");
+          refDiv.className = "tooltip-reference";
+          refDiv.innerHTML = `
+            <strong>Reference snippet:</strong>
+            ${highlightMark.__referenceSegment}
+          `;
+          tooltip.appendChild(refDiv);
+        }
+
+        tooltip.style.left = (event.pageX + 5) + "px";
+        tooltip.style.top = (event.pageY - 40) + "px";
+
+        document.body.appendChild(tooltip);
+        openTooltip = tooltip;
+      }
+    });
+  </script>
+</body>
+</html>
