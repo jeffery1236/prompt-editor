@@ -1,7 +1,4 @@
 # 📝 Prompt Editor
-A simple web-based Prompt Editor with a Python backend and HTML frontend. Use it to structure, edit, and refine large language model prompts more efficiently.
-
-# 📝 Prompt Editor
 
 A simple web-based Prompt Editor with a Python backend and HTML frontend. Use it to structure, edit, and refine large language model prompts more efficiently.
 
